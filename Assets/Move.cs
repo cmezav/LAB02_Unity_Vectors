@@ -18,6 +18,8 @@ public class Move : MonoBehaviour
     {
         direction = goal.transform.position - transform.position;
 
+        transform.LookAt(goal.transform.position);
+
         if (direction.magnitude > 2)
         {
             velocity = direction.normalized * speed;
