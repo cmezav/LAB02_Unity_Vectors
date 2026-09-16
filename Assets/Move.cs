@@ -5,6 +5,9 @@ public class Move : MonoBehaviour
     public GameObject goal;
 
     Vector3 direction;
+    Vector3 velocity;
+
+    float speed = 0.05f;
 
     void Start()
     {
@@ -13,6 +16,8 @@ public class Move : MonoBehaviour
 
     void LateUpdate()
     {
-        transform.position = transform.position + direction.normalized;
+        velocity = direction.normalized * speed;
+
+        transform.position = transform.position + velocity;
     }
 }
