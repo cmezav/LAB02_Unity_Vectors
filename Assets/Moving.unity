@@ -272,6 +272,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -397,6 +398,21 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70fc9dc9e13fc534bbca6f89626ff6f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThirdPersonCamera
+  target: {fileID: 0}
+  offset: {x: 0, y: 5, z: -7}
+  smoothSpeed: 5
 --- !u!1001 &404945954
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -457,7 +473,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 619614876}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
 --- !u!1 &410087039
 GameObject:
@@ -646,7 +665,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1518372407}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
 --- !u!1 &522294886
 GameObject:
@@ -680,7 +702,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 3
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!4 &522294888
 Transform:
   m_ObjectHideFlags: 0
@@ -757,8 +781,28 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1390535948}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+--- !u!1 &619614875 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 404945954}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &619614876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 619614875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
 --- !u!1001 &622229507
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -819,8 +863,28 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 673842476}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+--- !u!1 &673842475 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 622229507}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &673842476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 673842475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
 --- !u!1001 &757232666
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1026,7 +1090,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 2.5
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!4 &1251574605
 Transform:
   m_ObjectHideFlags: 0
@@ -1103,8 +1169,45 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1347487022}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+--- !u!1 &1347487021 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 1327954182}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1347487022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1347487021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
+--- !u!1 &1390535947 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 589608892}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1390535948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390535947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
 --- !u!1 &1415820628
 GameObject:
   m_ObjectHideFlags: 0
@@ -1218,6 +1321,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1518372406 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 515711437}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1518372407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1518372406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
 --- !u!1001 &1518599302
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1278,7 +1398,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2063332370}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
 --- !u!1 &1562450335
 GameObject:
@@ -1312,7 +1435,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 2
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!4 &1562450337
 Transform:
   m_ObjectHideFlags: 0
@@ -1377,7 +1502,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 2
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!1001 &1614075883
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1438,7 +1565,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: -501748564634472881, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2093809475}
   m_SourcePrefab: {fileID: 100100000, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
 --- !u!1001 &1711144347
 PrefabInstance:
@@ -1534,7 +1664,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 4
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!4 &1867698696
 Transform:
   m_ObjectHideFlags: 0
@@ -1583,7 +1715,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 3.2
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!4 &1957014371
 Transform:
   m_ObjectHideFlags: 0
@@ -1632,7 +1766,9 @@ MonoBehaviour:
   goal: {fileID: 321503515}
   speed: 1.5
   stopDistance: 2.5
+  grassStopDistance: 1
   rotationSpeed: 4
+  isEating: 0
 --- !u!4 &2049004626
 Transform:
   m_ObjectHideFlags: 0
@@ -1711,6 +1847,40 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b9315069d44e05a4fa05782fa0c8e847, type: 3}
   m_PrefabInstance: {fileID: 2049683850}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2063332369 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 1518599302}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2063332370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2063332369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
+--- !u!1 &2093809474 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 766d5d02d20086e45b3f2834e8ada30c, type: 3}
+  m_PrefabInstance: {fileID: 1614075883}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2093809475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093809474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd67df39a381e5e41bc1747e5edaf866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpot
 --- !u!1001 &2124288671
 PrefabInstance:
   m_ObjectHideFlags: 0
