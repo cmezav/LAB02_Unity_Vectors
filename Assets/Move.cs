@@ -7,7 +7,7 @@ public class Move : MonoBehaviour
     Vector3 direction;
     Vector3 velocity;
 
-    float speed = 0.05f;
+    float speed = 2.0f;
 
     void Start()
     {
@@ -18,6 +18,6 @@ public class Move : MonoBehaviour
     {
         velocity = direction.normalized * speed;
 
-        transform.position = transform.position + velocity;
+        transform.position = transform.position + velocity * Time.deltaTime;
     }
 }
