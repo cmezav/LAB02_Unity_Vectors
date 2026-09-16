@@ -3,11 +3,10 @@ using UnityEngine;
 public class Move : MonoBehaviour
 {
     public GameObject goal;
+    public float speed = 2.0f;
 
     Vector3 direction;
     Vector3 velocity;
-
-    float speed = 2.0f;
 
     void Start()
     {
