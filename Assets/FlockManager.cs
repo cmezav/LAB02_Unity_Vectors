@@ -19,7 +19,10 @@ public class FlockManager : MonoBehaviour
     public int circleSegments = 80;
     public float circleWidth = 0.08f;
     public float circleHeight = 0.08f;
-    public Color circleColor = Color.yellow;
+    public Color circleColor = Color.green;
+
+    public Color fillColor =
+        new Color32(161, 217, 155, 128);
 
     private Move[] sheep;
     private GrassSpot[] grasses;
@@ -28,6 +31,10 @@ public class FlockManager : MonoBehaviour
     private int roundNumber = 0;
 
     private LineRenderer circle;
+
+    private GameObject fillObject;
+    private MeshFilter fillMeshFilter;
+    private MeshRenderer fillMeshRenderer;
 
     void Start()
     {
@@ -58,6 +65,7 @@ public class FlockManager : MonoBehaviour
         );
 
         SetupCircle();
+        SetupFill();
 
         StartNewGrassRound();
     }
@@ -252,4 +260,135 @@ public class FlockManager : MonoBehaviour
             );
         }
     }
+
+    void SetupFill()
+{
+    fillObject =
+        new GameObject("AttractionRadiusFill");
+
+    fillObject.transform.SetParent(
+        transform
+    );
+
+    fillObject.transform.localPosition =
+        Vector3.zero;
+
+    fillMeshFilter =
+        fillObject.AddComponent<MeshFilter>();
+
+    fillMeshRenderer =
+        fillObject.AddComponent<MeshRenderer>();
+
+    Shader shader =
+        Shader.Find("Universal Render Pipeline/Unlit");
+
+    if (shader == null)
+    {
+        shader =
+            Shader.Find("Sprites/Default");
+    }
+
+    Material material =
+        new Material(shader);
+
+    material.color = fillColor;
+
+    // Transparencia URP
+    if (
+        material.HasProperty("_Surface")
+    )
+    {
+        material.SetFloat(
+            "_Surface",
+            1
+        );
+
+        material.SetFloat(
+            "_ZWrite",
+            0
+        );
+
+        material.EnableKeyword(
+            "_SURFACE_TYPE_TRANSPARENT"
+        );
+
+        material.renderQueue = 3000;
+    }
+
+    fillMeshRenderer.material =
+        material;
+
+    CreateFillMesh();
+}
+
+void CreateFillMesh()
+{
+    Mesh mesh =
+        new Mesh();
+
+    Vector3[] vertices =
+        new Vector3[
+            circleSegments + 1
+        ];
+
+    int[] triangles =
+        new int[
+            circleSegments * 3
+        ];
+
+    // Centro
+    vertices[0] =
+        new Vector3(
+            0,
+            circleHeight - 0.01f,
+            0
+        );
+
+    // Borde
+    for (
+        int i = 0;
+        i < circleSegments;
+        i++
+    )
+    {
+        float angle =
+            (float)i /
+            circleSegments *
+            Mathf.PI *
+            2.0f;
+
+        vertices[i + 1] =
+            new Vector3(
+                Mathf.Cos(angle) *
+                attractionRadius,
+
+                circleHeight - 0.01f,
+
+                Mathf.Sin(angle) *
+                attractionRadius
+            );
+
+        int next =
+            (i + 1) %
+            circleSegments;
+
+        triangles[i * 3] = 0;
+        triangles[i * 3 + 1] =
+            next + 1;
+        triangles[i * 3 + 2] =
+            i + 1;
+    }
+
+    mesh.vertices =
+        vertices;
+
+    mesh.triangles =
+        triangles;
+
+    mesh.RecalculateNormals();
+
+    fillMeshFilter.mesh =
+        mesh;
+}
+
 }
