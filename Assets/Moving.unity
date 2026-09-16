@@ -240,6 +240,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2744035215387846840, guid: d2a6cffd27c3e44449a585a61fc0359d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 321503516}
+    - targetCorrespondingSourceObject: {fileID: 2744035215387846840, guid: d2a6cffd27c3e44449a585a61fc0359d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 321503518}
   m_SourcePrefab: {fileID: 100100000, guid: d2a6cffd27c3e44449a585a61fc0359d, type: 3}
 --- !u!1 &321503515 stripped
 GameObject:
@@ -265,6 +268,24 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2750536015425250604, guid: d2a6cffd27c3e44449a585a61fc0359d, type: 3}
   m_PrefabInstance: {fileID: 321503514}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &321503518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321503515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 429ae76b573da784889862b4f037b123, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlockManager
+  currentMode: 0
+  attractionRadius: 12
+  circleSegments: 80
+  circleWidth: 0.08
+  circleHeight: 0.08
+  circleColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,6 +729,9 @@ MonoBehaviour:
   speed: 3
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!4 &522294888
@@ -1096,6 +1120,9 @@ MonoBehaviour:
   speed: 2.5
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!4 &1251574605
@@ -1441,6 +1468,9 @@ MonoBehaviour:
   speed: 2
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!4 &1562450337
@@ -1508,6 +1538,9 @@ MonoBehaviour:
   speed: 2
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!1001 &1614075883
@@ -1670,6 +1703,9 @@ MonoBehaviour:
   speed: 4
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!4 &1867698696
@@ -1721,6 +1757,9 @@ MonoBehaviour:
   speed: 3.2
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!4 &1957014371
@@ -1772,6 +1811,9 @@ MonoBehaviour:
   speed: 1.5
   stopDistance: 2.5
   grassStopDistance: 1
+  eatingTime: 5
+  wanderDistance: 7
+  wanderArrivalDistance: 0.8
   rotationSpeed: 4
   isEating: 0
 --- !u!4 &2049004626

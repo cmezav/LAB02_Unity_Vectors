@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class Move : MonoBehaviour
@@ -9,88 +8,127 @@ public class Move : MonoBehaviour
     [Header("Seeking")]
     public float stopDistance = 2.5f;
 
-    [Header("Wandering")]
+    [Header("Comer")]
     public float grassStopDistance = 1.0f;
+    public float eatingTime = 5.0f;
+
+    [Header("Wandering Random")]
+    public float wanderDistance = 7.0f;
+    public float wanderArrivalDistance = 0.8f;
 
     [Header("Rotacion")]
     public float rotationSpeed = 5.0f;
 
-    private static bool wanderingMode = false;
+    [Header("Estado")]
+    public bool isEating = false;
 
+    private FlockManager manager;
     private GrassSpot grassTarget;
 
-    public bool isEating = false;
+    private float eatingTimer = 0.0f;
+
+    private Vector3 randomTarget;
+
+    public bool HasFinishedGrass
+    {
+        get;
+        private set;
+    }
 
     void Start()
     {
-        AssignGrass();
-    }
+        manager =
+            FindFirstObjectByType<FlockManager>();
 
-    void Update()
-    {
-        // W = ir a comer pasto
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            wanderingMode = true;
-            isEating = false;
-        }
-
-        // S = volver al Villager
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            wanderingMode = false;
-            isEating = false;
-        }
+        ChooseRandomTarget();
     }
 
     void LateUpdate()
     {
-        if (wanderingMode)
+        if (manager == null)
+            return;
+
+        if (
+            manager.currentMode ==
+            FlockManager.HerdMode.Seeking
+        )
         {
-            Wander();
+            SeekingMode();
         }
         else
         {
-            Seek();
+            WanderingMode();
         }
     }
 
-    // ===============================
-    // SEEK ORIGINAL
-    // ===============================
+    // ======================================
+    // SEEKING
+    // ======================================
 
-    void Seek()
+    void SeekingMode()
     {
-        if (goal == null)
-            return;
-
         isEating = false;
 
-        Vector3 direction =
-            goal.transform.position -
-            transform.position;
-
-        direction.y = 0;
-
-        float distance =
-            direction.magnitude;
-
-        if (distance > stopDistance)
+        if (goal == null)
         {
-            MoveTowards(
-                direction.normalized
-            );
+            RandomWander();
+            return;
+        }
+
+        // Solo sigue al Villager si esta
+        // DENTRO del radio visible.
+        if (
+            manager.IsInsideAttractionRadius(
+                transform.position
+            )
+        )
+        {
+            Vector3 direction =
+                goal.transform.position -
+                transform.position;
+
+            direction.y = 0;
+
+            float distance =
+                direction.magnitude;
+
+            if (distance > stopDistance)
+            {
+                MoveInDirection(
+                    direction.normalized
+                );
+            }
+        }
+        else
+        {
+            // S esta activo, pero la oveja
+            // esta fuera del radio.
+            RandomWander();
         }
     }
 
-    // ===============================
-    // WANDER HACIA PASTO
-    // ===============================
+    // ======================================
+    // WANDERING
+    // ======================================
 
-    void Wander()
+    void WanderingMode()
     {
-        if (grassTarget == null)
+        // Ya comio en esta ronda:
+        // ahora puede vagar libremente.
+        if (HasFinishedGrass)
+        {
+            RandomWander();
             return;
+        }
+
+        if (
+            grassTarget == null ||
+            !grassTarget.IsAvailable
+        )
+        {
+            RandomWander();
+            return;
+        }
 
         Vector3 direction =
             grassTarget.transform.position -
@@ -104,23 +142,99 @@ public class Move : MonoBehaviour
         if (distance > grassStopDistance)
         {
             isEating = false;
+            eatingTimer = 0;
 
-            MoveTowards(
+            MoveInDirection(
                 direction.normalized
             );
         }
         else
         {
-            // Ya llego al pasto
-            isEating = true;
+            EatGrass();
         }
     }
 
-    // ===============================
-    // MOVIMIENTO
-    // ===============================
+    // ======================================
+    // COMER DURANTE 5 SEGUNDOS
+    // ======================================
 
-    void MoveTowards(Vector3 moveDirection)
+    void EatGrass()
+    {
+        isEating = true;
+
+        eatingTimer +=
+            Time.deltaTime;
+
+        if (eatingTimer >= eatingTime)
+        {
+            isEating = false;
+            eatingTimer = 0;
+
+            manager.SheepFinishedEating(
+                this,
+                grassTarget
+            );
+
+            ChooseRandomTarget();
+        }
+    }
+
+    // ======================================
+    // RANDOM WANDER
+    // ======================================
+
+    void RandomWander()
+    {
+        Vector3 direction =
+            randomTarget -
+            transform.position;
+
+        direction.y = 0;
+
+        if (
+            direction.magnitude <
+            wanderArrivalDistance
+        )
+        {
+            ChooseRandomTarget();
+
+            direction =
+                randomTarget -
+                transform.position;
+
+            direction.y = 0;
+        }
+
+        if (direction.sqrMagnitude > 0.001f)
+        {
+            MoveInDirection(
+                direction.normalized
+            );
+        }
+    }
+
+    void ChooseRandomTarget()
+    {
+        Vector2 randomCircle =
+            Random.insideUnitCircle *
+            wanderDistance;
+
+        randomTarget =
+            transform.position +
+            new Vector3(
+                randomCircle.x,
+                0,
+                randomCircle.y
+            );
+    }
+
+    // ======================================
+    // MOVIMIENTO
+    // ======================================
+
+    void MoveInDirection(
+        Vector3 moveDirection
+    )
     {
         transform.position +=
             moveDirection *
@@ -142,47 +256,34 @@ public class Move : MonoBehaviour
             );
     }
 
-    // ===============================
-    // UN PASTO POR OVEJA
-    // ===============================
+    // ======================================
+    // CONTROL DESDE FLOCK MANAGER
+    // ======================================
 
-    void AssignGrass()
+    public void SetGrassTarget(
+        GrassSpot target
+    )
     {
-        GrassSpot[] grasses =
-            FindObjectsByType<GrassSpot>(
-                FindObjectsSortMode.None
-            );
+        grassTarget = target;
+    }
 
-        Move[] sheep =
-            FindObjectsByType<Move>(
-                FindObjectsSortMode.None
-            );
+    public void MarkGrassFinished()
+    {
+        HasFinishedGrass = true;
+    }
 
-        if (grasses.Length == 0)
-            return;
+    public void ResetGrassRound()
+    {
+        HasFinishedGrass = false;
+        isEating = false;
+        eatingTimer = 0;
+    }
 
-        Array.Sort(
-            grasses,
-            (a, b) => string.Compare(
-                a.name,
-                b.name,
-                StringComparison.Ordinal
-            )
-        );
+    public void OnSeekingActivated()
+    {
+        isEating = false;
+        eatingTimer = 0;
 
-        Array.Sort(
-            sheep,
-            (a, b) => string.Compare(
-                a.name,
-                b.name,
-                StringComparison.Ordinal
-            )
-        );
-
-        int index =
-            Array.IndexOf(sheep, this);
-
-        grassTarget =
-            grasses[index % grasses.Length];
+        ChooseRandomTarget();
     }
 }
