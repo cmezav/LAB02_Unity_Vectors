@@ -4,14 +4,15 @@ public class Move : MonoBehaviour
 {
     public GameObject goal;
 
+    Vector3 direction;
+
     void Start()
     {
-        Vector3 direction = goal.transform.position - transform.position;
-        transform.Translate(direction);
+        direction = goal.transform.position - transform.position;
     }
 
-    void Update()
+    void LateUpdate()
     {
-
+        transform.position = transform.position + direction * 0.01f;
     }
 }
