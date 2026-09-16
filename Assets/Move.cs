@@ -11,11 +11,13 @@ public class Move : MonoBehaviour
 
     void Start()
     {
-        direction = goal.transform.position - transform.position;
+
     }
 
     void LateUpdate()
     {
+        direction = goal.transform.position - transform.position;
+
         velocity = direction.normalized * speed;
 
         transform.position = transform.position + velocity * Time.deltaTime;
