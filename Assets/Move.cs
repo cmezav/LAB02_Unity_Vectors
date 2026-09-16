@@ -18,8 +18,12 @@ public class Move : MonoBehaviour
     {
         direction = goal.transform.position - transform.position;
 
-        velocity = direction.normalized * speed;
+        if (direction.magnitude > 2)
+        {
+            velocity = direction.normalized * speed;
 
-        transform.position = transform.position + velocity * Time.deltaTime;
+            transform.position =
+                transform.position + velocity * Time.deltaTime;
+        }
     }
 }
