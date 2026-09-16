@@ -13,6 +13,6 @@ public class Move : MonoBehaviour
 
     void LateUpdate()
     {
-        transform.position = transform.position + direction * 0.01f;
+        transform.position = transform.position + direction.normalized;
     }
 }
