@@ -6,7 +6,8 @@ public class Move : MonoBehaviour
 
     void Start()
     {
-        this.transform.Translate(goal.transform.position);
+        Vector3 direction = goal.transform.position - transform.position;
+        transform.Translate(direction);
     }
 
     void Update()
