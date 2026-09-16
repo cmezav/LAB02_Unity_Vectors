@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Move : MonoBehaviour
@@ -5,26 +6,58 @@ public class Move : MonoBehaviour
     public GameObject goal;
     public float speed = 2.0f;
 
-    [Header("Distancias")]
-    public float stopDistance = 2.0f;
-    public float separationRadius = 2.2f;
+    [Header("Formacion")]
+    public float formationRadius = 4.5f;
+    public float arriveDistance = 0.35f;
+    public float slowRadius = 3.5f;
 
-    [Header("Separacion")]
-    public float separationWeight = 1.5f;
-    public float villagerAvoidWeight = 2.0f;
+    [Header("Modelo visual")]
+    public Transform visualModel;
 
-    [Header("Rotacion")]
-    public float rotationSpeed = 4.0f;
+    // IMPORTANTE:
+    // -90 porque con +90 la oveja quedaba mirando hacia atras.
+    public float modelYawOffset = -90.0f;
 
-    Vector3 direction;
-    Vector3 velocity;
+    [Header("Rotacion visual")]
+    public float rotationSpeed = 360.0f;
 
-    Move[] sheep;
+    private Vector3 formationOffset;
 
     void Start()
     {
-        // Busca todas las ovejas que usan este mismo script
-        sheep = FindObjectsOfType<Move>();
+        Move[] sheep = FindObjectsByType<Move>(
+            FindObjectsSortMode.None
+        );
+
+        Array.Sort(
+            sheep,
+            (a, b) => string.Compare(
+                a.name,
+                b.name,
+                StringComparison.Ordinal
+            )
+        );
+
+        int index = Array.IndexOf(sheep, this);
+
+        float angle =
+            (Mathf.PI * 2.0f * index) /
+            Mathf.Max(1, sheep.Length);
+
+        // Posicion propia alrededor del Villager.
+        // Este vector NO depende de su rotacion.
+        formationOffset = new Vector3(
+            Mathf.Cos(angle),
+            0,
+            Mathf.Sin(angle)
+        ) * formationRadius;
+
+        // Buscar automaticamente Low Poly Sheep
+        if (visualModel == null &&
+            transform.childCount > 0)
+        {
+            visualModel = transform.GetChild(0);
+        }
     }
 
     void LateUpdate()
@@ -32,111 +65,89 @@ public class Move : MonoBehaviour
         if (goal == null)
             return;
 
-        direction = goal.transform.position - transform.position;
+        // SOLO utilizamos la POSICION del Villager.
+        Vector3 targetPosition =
+            goal.transform.position +
+            formationOffset;
 
-        // Ignoramos diferencias de altura
+        targetPosition.y =
+            transform.position.y;
+
+        Vector3 direction =
+            targetPosition -
+            transform.position;
+
         direction.y = 0;
 
-        float goalDistance = direction.magnitude;
+        float distance =
+            direction.magnitude;
 
-        // SEEK: seguir al Villager
-        Vector3 seekDirection = Vector3.zero;
-
-        if (goalDistance > stopDistance)
+        // Ya esta en su lugar.
+        if (distance <= arriveDistance)
         {
-            seekDirection = direction.normalized;
+            return;
         }
 
-        // SEPARATION: evitar que las ovejas se atraviesen
-        Vector3 separation = CalculateSeparation();
-
-        // Evitar atravesar al Villager
-        Vector3 avoidVillager = Vector3.zero;
-
-        if (goalDistance < stopDistance && goalDistance > 0.01f)
-        {
-            float strength =
-                (stopDistance - goalDistance) / stopDistance;
-
-            avoidVillager =
-                -direction.normalized *
-                strength *
-                villagerAvoidWeight;
-        }
-
-        // Combinar SEEK + SEPARATION + evitar Villager
         Vector3 moveDirection =
-            seekDirection +
-            separation * separationWeight +
-            avoidVillager;
+            direction.normalized;
 
-        moveDirection.y = 0;
+        float currentSpeed =
+            speed;
 
-        if (moveDirection.sqrMagnitude > 0.001f)
+        // Frenar cuando se acerca a su punto
+        if (distance < slowRadius)
         {
-            moveDirection.Normalize();
+            float factor =
+                Mathf.InverseLerp(
+                    arriveDistance,
+                    slowRadius,
+                    distance
+                );
 
-            // Movimiento
-            velocity = moveDirection * speed;
-
-            transform.position +=
-                velocity * Time.deltaTime;
-
-            // Rotacion suave hacia la direccion propia
-            // de movimiento de esta oveja
-            Vector3 flatDirection = new Vector3(
-                moveDirection.x,
-                0,
-                moveDirection.z
-            );
-
-            if (flatDirection.sqrMagnitude > 0.001f)
-            {
-                Quaternion targetRotation =
-                    Quaternion.LookRotation(flatDirection);
-
-                transform.rotation =
-                    Quaternion.Slerp(
-                        transform.rotation,
-                        targetRotation,
-                        rotationSpeed * Time.deltaTime
-                    );
-            }
-        }
-    }
-
-    Vector3 CalculateSeparation()
-    {
-        Vector3 separation = Vector3.zero;
-
-        foreach (Move other in sheep)
-        {
-            if (other == null || other == this)
-                continue;
-
-            Vector3 difference =
-                transform.position -
-                other.transform.position;
-
-            // Trabajamos sobre el suelo
-            difference.y = 0;
-
-            float distance = difference.magnitude;
-
-            if (distance > 0.01f &&
-                distance < separationRadius)
-            {
-                // Mientras mas cerca este otra oveja,
-                // mas fuerte es la separacion
-                float strength =
-                    (separationRadius - distance) /
-                    separationRadius;
-
-                separation +=
-                    difference.normalized * strength;
-            }
+            currentSpeed =
+                speed * factor;
         }
 
-        return separation;
+        // ========================================
+        // MOVER SOLO EL PADRE
+        // NO LO ROTAMOS
+        // ========================================
+
+        transform.position +=
+            moveDirection *
+            currentSpeed *
+            Time.deltaTime;
+
+        // ========================================
+        // ROTAR SOLO EL MODELO VISUAL
+        // ========================================
+
+        if (visualModel != null)
+        {
+            Quaternion movementRotation =
+                Quaternion.LookRotation(
+                    moveDirection,
+                    Vector3.up
+                );
+
+            Quaternion modelCorrection =
+                Quaternion.Euler(
+                    0,
+                    modelYawOffset,
+                    0
+                );
+
+            Quaternion targetVisualRotation =
+                movementRotation *
+                modelCorrection;
+
+            visualModel.rotation =
+                Quaternion.RotateTowards(
+                    visualModel.rotation,
+                    targetVisualRotation,
+                    rotationSpeed *
+                    Time.deltaTime
+                );
+        }
     }
 }
