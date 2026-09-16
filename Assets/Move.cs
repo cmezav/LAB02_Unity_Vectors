@@ -76,7 +76,7 @@ public class Move : MonoBehaviour
         }
 
         // Solo sigue al Villager si esta
-        // DENTRO del radio visible.
+        // dentro del radio de atraccion.
         if (
             manager.IsInsideAttractionRadius(
                 transform.position
@@ -101,8 +101,8 @@ public class Move : MonoBehaviour
         }
         else
         {
-            // S esta activo, pero la oveja
-            // esta fuera del radio.
+            // Aunque Seeking este activado,
+            // fuera del radio sigue vagando.
             RandomWander();
         }
     }
@@ -113,14 +113,16 @@ public class Move : MonoBehaviour
 
     void WanderingMode()
     {
-        // Ya comio en esta ronda:
-        // ahora puede vagar libremente.
+        // Si ya comio su pasto,
+        // puede vagar libremente.
         if (HasFinishedGrass)
         {
             RandomWander();
             return;
         }
 
+        // Si no tiene pasto disponible,
+        // vaga libremente.
         if (
             grassTarget == null ||
             !grassTarget.IsAvailable
@@ -175,12 +177,14 @@ public class Move : MonoBehaviour
                 grassTarget
             );
 
+            // Despues de comer comienza
+            // a caminar libremente.
             ChooseRandomTarget();
         }
     }
 
     // ======================================
-    // RANDOM WANDER
+    // WANDERING RANDOM
     // ======================================
 
     void RandomWander()
@@ -191,6 +195,8 @@ public class Move : MonoBehaviour
 
         direction.y = 0;
 
+        // Llegamos al punto aleatorio:
+        // elegimos otro.
         if (
             direction.magnitude <
             wanderArrivalDistance
@@ -213,8 +219,29 @@ public class Move : MonoBehaviour
         }
     }
 
+    // ======================================
+    // ELEGIR DESTINO DENTRO DEL PLANE
+    // ======================================
+
     void ChooseRandomTarget()
     {
+        // Si existe WorldBounds,
+        // elegimos un punto que SIEMPRE
+        // este dentro del Plane.
+        if (WorldBounds.Instance != null)
+        {
+            randomTarget =
+                WorldBounds.Instance.GetRandomPoint();
+
+            // Mantener la altura de la oveja.
+            randomTarget.y =
+                transform.position.y;
+
+            return;
+        }
+
+        // Fallback por si WorldBounds
+        // no esta configurado.
         Vector2 randomCircle =
             Random.insideUnitCircle *
             wanderDistance;
@@ -236,11 +263,24 @@ public class Move : MonoBehaviour
         Vector3 moveDirection
     )
     {
+        // Movimiento normal.
         transform.position +=
             moveDirection *
             speed *
             Time.deltaTime;
 
+        // IMPORTANTE:
+        // impedir que salga del Plane.
+        if (WorldBounds.Instance != null)
+        {
+            transform.position =
+                WorldBounds.Instance.ClampPosition(
+                    transform.position
+                );
+        }
+
+        // Rotar hacia la direccion
+        // real de movimiento.
         Quaternion targetRotation =
             Quaternion.LookRotation(
                 moveDirection,
