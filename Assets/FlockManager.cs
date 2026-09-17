@@ -18,9 +18,12 @@ public class FlockManager : MonoBehaviour
     [Header("Circulo visible")]
     public int circleSegments = 80;
     public float circleWidth = 0.08f;
-    public float circleHeight = 0.08f;
     public Color circleColor = Color.green;
 
+    [Header("Altura visual del radio")]
+    public float groundVisualOffset = 0.02f;
+
+    [Header("Relleno")]
     public Color fillColor =
         new Color32(161, 217, 155, 128);
 
@@ -38,13 +41,15 @@ public class FlockManager : MonoBehaviour
 
     void Start()
     {
-        sheep = FindObjectsByType<Move>(
-            FindObjectsSortMode.None
-        );
+        sheep =
+            FindObjectsByType<Move>(
+                FindObjectsSortMode.None
+            );
 
-        grasses = FindObjectsByType<GrassSpot>(
-            FindObjectsSortMode.None
-        );
+        grasses =
+            FindObjectsByType<GrassSpot>(
+                FindObjectsSortMode.None
+            );
 
         Array.Sort(
             sheep,
@@ -73,36 +78,76 @@ public class FlockManager : MonoBehaviour
     }
 
     void Update()
-{
-    // SEEKING
-    if (Input.GetKeyDown(KeyCode.S))
     {
-        currentMode = HerdMode.Seeking;
-
-        foreach (Move s in sheep)
+        // ===============================
+        // S = SEEKING
+        // ===============================
+        if (Input.GetKeyDown(KeyCode.S))
         {
-            s.OnSeekingActivated();
+            currentMode =
+                HerdMode.Seeking;
+
+            foreach (Move s in sheep)
+            {
+                s.OnSeekingActivated();
+            }
+
+            UpdateRadiusVisibility();
         }
 
-        UpdateRadiusVisibility();
+        // ===============================
+        // W = WANDERING
+        // ===============================
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            currentMode =
+                HerdMode.Wandering;
+
+            UpdateRadiusVisibility();
+        }
     }
 
-    // WANDERING
-    if (Input.GetKeyDown(KeyCode.W))
+    void LateUpdate()
     {
-        currentMode = HerdMode.Wandering;
+        if (
+            currentMode ==
+            HerdMode.Seeking
+        )
+        {
+            // Mantener el relleno siguiendo
+            // X y Z del Villager,
+            // pero siempre pegado al suelo.
+            if (fillObject != null)
+            {
+                fillObject.transform.position =
+                    new Vector3(
+                        transform.position.x,
+                        GetGroundVisualY(),
+                        transform.position.z
+                    );
+            }
 
-        UpdateRadiusVisibility();
+            DrawCircle();
+        }
     }
-}
 
-void LateUpdate()
-{
-    if (currentMode == HerdMode.Seeking)
+    // ======================================
+    // ALTURA REAL DEL SUELO
+    // ======================================
+
+    float GetGroundVisualY()
     {
-        DrawCircle();
+        if (WorldBounds.Instance != null)
+        {
+            return
+                WorldBounds.Instance
+                    .transform.position.y
+                +
+                groundVisualOffset;
+        }
+
+        return groundVisualOffset;
     }
-}
 
     // ======================================
     // RADIO DE ATRACCION
@@ -124,7 +169,34 @@ void LateUpdate()
                 villagerPosition
             );
 
-        return distance <= attractionRadius;
+        return
+            distance <= attractionRadius;
+    }
+
+    // ======================================
+    // VISIBILIDAD DEL RADIO
+    // ======================================
+
+    void UpdateRadiusVisibility()
+    {
+        bool visible =
+            currentMode ==
+            HerdMode.Seeking;
+
+        // Contorno
+        if (circle != null)
+        {
+            circle.enabled =
+                visible;
+        }
+
+        // Relleno
+        if (fillObject != null)
+        {
+            fillObject.SetActive(
+                visible
+            );
+        }
     }
 
     // ======================================
@@ -136,38 +208,31 @@ void LateUpdate()
         GrassSpot eatenGrass
     )
     {
-        if (sheepThatFinished.HasFinishedGrass)
+        if (
+            sheepThatFinished
+                .HasFinishedGrass
+        )
+        {
             return;
+        }
 
-        sheepThatFinished.MarkGrassFinished();
+        sheepThatFinished
+            .MarkGrassFinished();
 
         eatenGrass.SetAvailable(false);
 
         finishedSheep++;
 
-        if (finishedSheep >= sheep.Length)
+        // Solo reaparecen cuando
+        // TODAS terminaron.
+        if (
+            finishedSheep >=
+            sheep.Length
+        )
         {
             RespawnAllGrass();
         }
     }
-
-    void UpdateRadiusVisibility()
-{
-    bool visible =
-        currentMode == HerdMode.Seeking;
-
-    // Contorno
-    if (circle != null)
-    {
-        circle.enabled = visible;
-    }
-
-    // Relleno
-    if (fillObject != null)
-    {
-        fillObject.SetActive(visible);
-    }
-}
 
     void RespawnAllGrass()
     {
@@ -175,7 +240,10 @@ void LateUpdate()
 
         roundNumber++;
 
-        foreach (GrassSpot grass in grasses)
+        foreach (
+            GrassSpot grass
+            in grasses
+        )
         {
             grass.SetAvailable(true);
         }
@@ -188,10 +256,12 @@ void LateUpdate()
         if (grasses.Length == 0)
             return;
 
-        for (int i = 0; i < sheep.Length; i++)
+        for (
+            int i = 0;
+            i < sheep.Length;
+            i++
+        )
         {
-            // Cambia el pasto de cada oveja
-            // en cada nueva ronda.
             int grassIndex =
                 (i + roundNumber) %
                 grasses.Length;
@@ -200,12 +270,13 @@ void LateUpdate()
                 grasses[grassIndex]
             );
 
-            sheep[i].ResetGrassRound();
+            sheep[i]
+                .ResetGrassRound();
         }
     }
 
     // ======================================
-    // CIRCULO VISIBLE
+    // CONTORNO DEL CIRCULO
     // ======================================
 
     void SetupCircle()
@@ -216,10 +287,15 @@ void LateUpdate()
         if (circle == null)
         {
             circle =
-                gameObject.AddComponent<LineRenderer>();
+                gameObject.AddComponent<
+                    LineRenderer
+                >();
         }
 
         circle.loop = true;
+
+        // Las posiciones que damos
+        // son coordenadas globales.
         circle.useWorldSpace = true;
 
         circle.positionCount =
@@ -245,7 +321,9 @@ void LateUpdate()
         if (shader == null)
         {
             shader =
-                Shader.Find("Sprites/Default");
+                Shader.Find(
+                    "Sprites/Default"
+                );
         }
 
         if (shader != null)
@@ -260,9 +338,14 @@ void LateUpdate()
         if (circle == null)
             return;
 
-        for (int i = 0;
-             i < circleSegments;
-             i++)
+        float groundY =
+            GetGroundVisualY();
+
+        for (
+            int i = 0;
+            i < circleSegments;
+            i++
+        )
         {
             float angle =
                 (float)i /
@@ -272,14 +355,16 @@ void LateUpdate()
 
             Vector3 point =
                 new Vector3(
+                    transform.position.x +
                     Mathf.Cos(angle) *
                     attractionRadius,
-                    circleHeight,
+
+                    groundY,
+
+                    transform.position.z +
                     Mathf.Sin(angle) *
                     attractionRadius
                 );
-
-            point += transform.position;
 
             circle.SetPosition(
                 i,
@@ -288,134 +373,169 @@ void LateUpdate()
         }
     }
 
+    // ======================================
+    // RELLENO DEL CIRCULO
+    // ======================================
+
     void SetupFill()
-{
-    fillObject =
-        new GameObject("AttractionRadiusFill");
-
-    fillObject.transform.SetParent(
-        transform
-    );
-
-    fillObject.transform.localPosition =
-        Vector3.zero;
-
-    fillMeshFilter =
-        fillObject.AddComponent<MeshFilter>();
-
-    fillMeshRenderer =
-        fillObject.AddComponent<MeshRenderer>();
-
-    Shader shader =
-        Shader.Find("Universal Render Pipeline/Unlit");
-
-    if (shader == null)
     {
-        shader =
-            Shader.Find("Sprites/Default");
-    }
-
-    Material material =
-        new Material(shader);
-
-    material.color = fillColor;
-
-    // Transparencia URP
-    if (
-        material.HasProperty("_Surface")
-    )
-    {
-        material.SetFloat(
-            "_Surface",
-            1
-        );
-
-        material.SetFloat(
-            "_ZWrite",
-            0
-        );
-
-        material.EnableKeyword(
-            "_SURFACE_TYPE_TRANSPARENT"
-        );
-
-        material.renderQueue = 3000;
-    }
-
-    fillMeshRenderer.material =
-        material;
-
-    CreateFillMesh();
-}
-
-void CreateFillMesh()
-{
-    Mesh mesh =
-        new Mesh();
-
-    Vector3[] vertices =
-        new Vector3[
-            circleSegments + 1
-        ];
-
-    int[] triangles =
-        new int[
-            circleSegments * 3
-        ];
-
-    // Centro
-    vertices[0] =
-        new Vector3(
-            0,
-            circleHeight - 0.01f,
-            0
-        );
-
-    // Borde
-    for (
-        int i = 0;
-        i < circleSegments;
-        i++
-    )
-    {
-        float angle =
-            (float)i /
-            circleSegments *
-            Mathf.PI *
-            2.0f;
-
-        vertices[i + 1] =
-            new Vector3(
-                Mathf.Cos(angle) *
-                attractionRadius,
-
-                circleHeight - 0.01f,
-
-                Mathf.Sin(angle) *
-                attractionRadius
+        fillObject =
+            new GameObject(
+                "AttractionRadiusFill"
             );
 
-        int next =
-            (i + 1) %
-            circleSegments;
+        // NO hacemos hijo del Villager,
+        // porque heredaria su altura.
+        fillObject.transform.position =
+            new Vector3(
+                transform.position.x,
+                GetGroundVisualY(),
+                transform.position.z
+            );
 
-        triangles[i * 3] = 0;
-        triangles[i * 3 + 1] =
-            next + 1;
-        triangles[i * 3 + 2] =
-            i + 1;
+        fillMeshFilter =
+            fillObject.AddComponent<
+                MeshFilter
+            >();
+
+        fillMeshRenderer =
+            fillObject.AddComponent<
+                MeshRenderer
+            >();
+
+        Shader shader =
+            Shader.Find(
+                "Universal Render Pipeline/Unlit"
+            );
+
+        if (shader == null)
+        {
+            shader =
+                Shader.Find(
+                    "Sprites/Default"
+                );
+        }
+
+        if (shader != null)
+        {
+            Material material =
+                new Material(shader);
+
+            material.color =
+                fillColor;
+
+            // Transparencia URP
+            if (
+                material.HasProperty(
+                    "_Surface"
+                )
+            )
+            {
+                material.SetFloat(
+                    "_Surface",
+                    1
+                );
+
+                material.SetFloat(
+                    "_ZWrite",
+                    0
+                );
+
+                material.EnableKeyword(
+                    "_SURFACE_TYPE_TRANSPARENT"
+                );
+
+                material.renderQueue =
+                    3000;
+            }
+
+            fillMeshRenderer.material =
+                material;
+        }
+
+        CreateFillMesh();
     }
 
-    mesh.vertices =
-        vertices;
+    // ======================================
+    // MALLA DEL RELLENO
+    // ======================================
 
-    mesh.triangles =
-        triangles;
+    void CreateFillMesh()
+    {
+        Mesh mesh =
+            new Mesh();
 
-    mesh.RecalculateNormals();
+        Vector3[] vertices =
+            new Vector3[
+                circleSegments + 1
+            ];
 
-    fillMeshFilter.mesh =
-        mesh;
-}
+        int[] triangles =
+            new int[
+                circleSegments * 3
+            ];
 
+        // Punto central del disco.
+        // Y = 0 porque la altura
+        // la controla fillObject.
+        vertices[0] =
+            new Vector3(
+                0,
+                0,
+                0
+            );
+
+        // Crear puntos alrededor
+        // de toda la circunferencia.
+        for (
+            int i = 0;
+            i < circleSegments;
+            i++
+        )
+        {
+            float angle =
+                (float)i /
+                circleSegments *
+                Mathf.PI *
+                2.0f;
+
+            // ESTE ERA EL CAMBIO QUE
+            // TE FALTABA:
+            vertices[i + 1] =
+                new Vector3(
+                    Mathf.Cos(angle) *
+                    attractionRadius,
+
+                    0,
+
+                    Mathf.Sin(angle) *
+                    attractionRadius
+                );
+
+            int next =
+                (i + 1) %
+                circleSegments;
+
+            triangles[i * 3] =
+                0;
+
+            triangles[i * 3 + 1] =
+                next + 1;
+
+            triangles[i * 3 + 2] =
+                i + 1;
+        }
+
+        mesh.vertices =
+            vertices;
+
+        mesh.triangles =
+            triangles;
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        fillMeshFilter.mesh =
+            mesh;
+    }
 }

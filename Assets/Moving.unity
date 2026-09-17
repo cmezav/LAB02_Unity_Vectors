@@ -263,6 +263,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Drive
   speed: 10
   rotationSpeed: 100
+  groundHeight: 0.85
 --- !u!4 &321503517 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2750536015425250604, guid: d2a6cffd27c3e44449a585a61fc0359d, type: 3}
@@ -281,11 +282,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlockManager
   currentMode: 0
-  attractionRadius: 7
+  attractionRadius: 9
   circleSegments: 80
   circleWidth: 0.08
-  circleHeight: 0.08
   circleColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  groundVisualOffset: 0.02
   fillColor: {r: 0.6313726, g: 0.8509804, b: 0.60784316, a: 0.5}
 --- !u!1 &330585543
 GameObject:
