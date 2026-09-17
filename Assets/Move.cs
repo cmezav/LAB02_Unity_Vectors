@@ -19,11 +19,18 @@ public class Move : MonoBehaviour
     [Header("Rotacion")]
     public float rotationSpeed = 5.0f;
 
+    [Header("No atravesar")]
+    public float sheepMinDistance = 1.7f;
+    public float villagerMinDistance = 2.0f;
+    public int separationIterations = 2;
+
     [Header("Estado")]
     public bool isEating = false;
 
     private FlockManager manager;
     private GrassSpot grassTarget;
+
+    private Move[] allSheep;
 
     private float eatingTimer = 0.0f;
 
@@ -40,6 +47,12 @@ public class Move : MonoBehaviour
         manager =
             FindFirstObjectByType<FlockManager>();
 
+        // Guardamos todas las ovejas.
+        allSheep =
+            FindObjectsByType<Move>(
+                FindObjectsSortMode.None
+            );
+
         ChooseRandomTarget();
     }
 
@@ -47,6 +60,10 @@ public class Move : MonoBehaviour
     {
         if (manager == null)
             return;
+
+        // ==================================
+        // COMPORTAMIENTO PRINCIPAL
+        // ==================================
 
         if (
             manager.currentMode ==
@@ -59,6 +76,12 @@ public class Move : MonoBehaviour
         {
             WanderingMode();
         }
+
+        // ==================================
+        // EVITAR ATRAVESARSE
+        // ==================================
+
+        ResolveOverlaps();
     }
 
     // ======================================
@@ -101,8 +124,8 @@ public class Move : MonoBehaviour
         }
         else
         {
-            // Aunque Seeking este activado,
-            // fuera del radio sigue vagando.
+            // Fuera del radio:
+            // sigue vagando aunque S este activo.
             RandomWander();
         }
     }
@@ -113,16 +136,15 @@ public class Move : MonoBehaviour
 
     void WanderingMode()
     {
-        // Si ya comio su pasto,
-        // puede vagar libremente.
+        // Ya comio:
+        // puede caminar libremente.
         if (HasFinishedGrass)
         {
             RandomWander();
             return;
         }
 
-        // Si no tiene pasto disponible,
-        // vaga libremente.
+        // No hay pasto disponible.
         if (
             grassTarget == null ||
             !grassTarget.IsAvailable
@@ -177,8 +199,6 @@ public class Move : MonoBehaviour
                 grassTarget
             );
 
-            // Despues de comer comienza
-            // a caminar libremente.
             ChooseRandomTarget();
         }
     }
@@ -195,8 +215,6 @@ public class Move : MonoBehaviour
 
         direction.y = 0;
 
-        // Llegamos al punto aleatorio:
-        // elegimos otro.
         if (
             direction.magnitude <
             wanderArrivalDistance
@@ -211,7 +229,10 @@ public class Move : MonoBehaviour
             direction.y = 0;
         }
 
-        if (direction.sqrMagnitude > 0.001f)
+        if (
+            direction.sqrMagnitude >
+            0.001f
+        )
         {
             MoveInDirection(
                 direction.normalized
@@ -220,28 +241,25 @@ public class Move : MonoBehaviour
     }
 
     // ======================================
-    // ELEGIR DESTINO DENTRO DEL PLANE
+    // DESTINO RANDOM DENTRO DEL PLANE
     // ======================================
 
     void ChooseRandomTarget()
     {
-        // Si existe WorldBounds,
-        // elegimos un punto que SIEMPRE
-        // este dentro del Plane.
-        if (WorldBounds.Instance != null)
+        if (
+            WorldBounds.Instance != null
+        )
         {
             randomTarget =
-                WorldBounds.Instance.GetRandomPoint();
+                WorldBounds.Instance
+                    .GetRandomPoint();
 
-            // Mantener la altura de la oveja.
             randomTarget.y =
                 transform.position.y;
 
             return;
         }
 
-        // Fallback por si WorldBounds
-        // no esta configurado.
         Vector2 randomCircle =
             Random.insideUnitCircle *
             wanderDistance;
@@ -263,24 +281,23 @@ public class Move : MonoBehaviour
         Vector3 moveDirection
     )
     {
-        // Movimiento normal.
         transform.position +=
             moveDirection *
             speed *
             Time.deltaTime;
 
-        // IMPORTANTE:
-        // impedir que salga del Plane.
-        if (WorldBounds.Instance != null)
+        // Mantenerse dentro del Plane.
+        if (
+            WorldBounds.Instance != null
+        )
         {
             transform.position =
-                WorldBounds.Instance.ClampPosition(
-                    transform.position
-                );
+                WorldBounds.Instance
+                    .ClampPosition(
+                        transform.position
+                    );
         }
 
-        // Rotar hacia la direccion
-        // real de movimiento.
         Quaternion targetRotation =
             Quaternion.LookRotation(
                 moveDirection,
@@ -294,6 +311,197 @@ public class Move : MonoBehaviour
                 rotationSpeed *
                 Time.deltaTime
             );
+    }
+
+    // ======================================
+    // NO ATRAVESAR OTRAS OVEJAS
+    // NI AL VILLAGER
+    // ======================================
+
+    void ResolveOverlaps()
+    {
+        Vector3 correctedPosition =
+            transform.position;
+
+        // Guardamos la altura original.
+        float originalY =
+            correctedPosition.y;
+
+        // Repetimos un par de veces porque
+        // una correccion puede acercarnos
+        // a otra oveja.
+        for (
+            int iteration = 0;
+            iteration < separationIterations;
+            iteration++
+        )
+        {
+            // ------------------------------
+            // OVEJA vs OVEJA
+            // ------------------------------
+
+            if (allSheep != null)
+            {
+                foreach (
+                    Move other
+                    in allSheep
+                )
+                {
+                    if (
+                        other == null ||
+                        other == this
+                    )
+                    {
+                        continue;
+                    }
+
+                    Vector3 otherPosition =
+                        other.transform.position;
+
+                    Vector3 difference =
+                        correctedPosition -
+                        otherPosition;
+
+                    difference.y = 0;
+
+                    float distance =
+                        difference.magnitude;
+
+                    if (
+                        distance <
+                        sheepMinDistance
+                    )
+                    {
+                        Vector3 away;
+
+                        // Si por alguna razon
+                        // estan exactamente
+                        // en la misma posicion.
+                        if (distance < 0.001f)
+{
+    // Si dos ovejas quedaron exactamente
+    // en el mismo punto, las mandamos
+    // en direcciones opuestas segun su nombre.
+    int nameOrder =
+        string.CompareOrdinal(
+            gameObject.name,
+            other.gameObject.name
+        );
+
+    if (nameOrder < 0)
+    {
+        away = Vector3.left;
+    }
+    else if (nameOrder > 0)
+    {
+        away = Vector3.right;
+    }
+    else
+    {
+        away = Vector3.forward;
+    }
+}
+else
+{
+    away =
+        difference /
+        distance;
+}
+
+                        float penetration =
+                            sheepMinDistance -
+                            distance;
+
+                        correctedPosition +=
+                            away *
+                            penetration;
+                    }
+                }
+            }
+
+            // ------------------------------
+            // OVEJA vs VILLAGER
+            // ------------------------------
+
+            if (goal != null)
+            {
+                Vector3 difference =
+                    correctedPosition -
+                    goal.transform.position;
+
+                difference.y = 0;
+
+                float distance =
+                    difference.magnitude;
+
+                if (
+                    distance <
+                    villagerMinDistance
+                )
+                {
+                    Vector3 away;
+
+                    if (
+                        distance <
+                        0.001f
+                    )
+                    {
+                        away =
+                            -goal.transform.forward;
+
+                        away.y = 0;
+
+                        if (
+                            away.sqrMagnitude <
+                            0.001f
+                        )
+                        {
+                            away =
+                                Vector3.forward;
+                        }
+
+                        away.Normalize();
+                    }
+                    else
+                    {
+                        away =
+                            difference /
+                            distance;
+                    }
+
+                    float penetration =
+                        villagerMinDistance -
+                        distance;
+
+                    correctedPosition +=
+                        away *
+                        penetration;
+                }
+            }
+        }
+
+        // Mantener la altura.
+        correctedPosition.y =
+            originalY;
+
+        // La correccion tampoco puede
+        // sacar la oveja del Plane.
+        if (
+            WorldBounds.Instance != null
+        )
+        {
+            correctedPosition =
+                WorldBounds.Instance
+                    .ClampPosition(
+                        correctedPosition
+                    );
+
+            correctedPosition.y =
+                originalY;
+        }
+
+        transform.position =
+            correctedPosition;
     }
 
     // ======================================
