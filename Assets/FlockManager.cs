@@ -68,32 +68,41 @@ public class FlockManager : MonoBehaviour
         SetupFill();
 
         StartNewGrassRound();
+
+        UpdateRadiusVisibility();
     }
 
     void Update()
+{
+    // SEEKING
+    if (Input.GetKeyDown(KeyCode.S))
     {
-        // SEEKING
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            currentMode = HerdMode.Seeking;
+        currentMode = HerdMode.Seeking;
 
-            foreach (Move s in sheep)
-            {
-                s.OnSeekingActivated();
-            }
+        foreach (Move s in sheep)
+        {
+            s.OnSeekingActivated();
         }
 
-        // WANDERING
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            currentMode = HerdMode.Wandering;
-        }
+        UpdateRadiusVisibility();
     }
 
-    void LateUpdate()
+    // WANDERING
+    if (Input.GetKeyDown(KeyCode.W))
+    {
+        currentMode = HerdMode.Wandering;
+
+        UpdateRadiusVisibility();
+    }
+}
+
+void LateUpdate()
+{
+    if (currentMode == HerdMode.Seeking)
     {
         DrawCircle();
     }
+}
 
     // ======================================
     // RADIO DE ATRACCION
@@ -141,6 +150,24 @@ public class FlockManager : MonoBehaviour
             RespawnAllGrass();
         }
     }
+
+    void UpdateRadiusVisibility()
+{
+    bool visible =
+        currentMode == HerdMode.Seeking;
+
+    // Contorno
+    if (circle != null)
+    {
+        circle.enabled = visible;
+    }
+
+    // Relleno
+    if (fillObject != null)
+    {
+        fillObject.SetActive(visible);
+    }
+}
 
     void RespawnAllGrass()
     {
